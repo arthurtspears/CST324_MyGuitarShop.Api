@@ -1,5 +1,6 @@
 
 using System.Diagnostics;
+using Microsoft.AspNetCore.HttpLogging;
 using MyGuitarShop.Data.Ado.Factories;
 
 namespace CST324_MyGuitarShop.Api
@@ -11,6 +12,8 @@ namespace CST324_MyGuitarShop.Api
             try
             {
                 var builder = WebApplication.CreateBuilder(args);
+
+                AddLogging(builder);
 
                 AddServices(builder);
 
@@ -42,8 +45,29 @@ namespace CST324_MyGuitarShop.Api
             }
         }
 
+        private static void AddLogging(WebApplicationBuilder builder)
+        {
+            builder.Services.AddLogging(logging =>
+            {
+                logging.ClearProviders();
+                logging.AddFilter("Microsoft", LogLevel.Information)
+                    .AddFilter("Microsoft.AspNetCore.HttpLogging", LogLevel.Information)
+                    .AddConsole();
+            });
+
+            builder.Services.AddHttpLogging(options =>
+            {
+                options.LoggingFields = HttpLoggingFields.RequestPath
+                                        | HttpLoggingFields.RequestMethod
+                                        | HttpLoggingFields.ResponseStatusCode;
+            });
+
+        }
+
         private static void ConfigureApplication(WebApplication app)
         {
+            app.UseHttpLogging();
+
             app.UseHttpsRedirection();
 
             app.UseAuthorization();
