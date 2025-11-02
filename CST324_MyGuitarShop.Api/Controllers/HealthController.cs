@@ -31,6 +31,7 @@ namespace CST324_MyGuitarShop.Api.Controllers
             try
             {
                 using var connection = sqlConnectionFactory.OpenSqlConnection();
+
                 return Ok(new{Message="Connection Successful!", connection.Database});
             }
             catch (Exception)
