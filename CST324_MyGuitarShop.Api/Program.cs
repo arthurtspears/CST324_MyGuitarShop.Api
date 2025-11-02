@@ -1,7 +1,11 @@
 
 using System.Diagnostics;
 using Microsoft.AspNetCore.HttpLogging;
+using MyGuitarShop.Common.DTOs;
+using MyGuitarShop.Common.Interfaces;
+using MyGuitarShop.Data.Ado.Entities;
 using MyGuitarShop.Data.Ado.Factories;
+using MyGuitarShop.Data.Ado.Repository;
 
 namespace CST324_MyGuitarShop.Api
 {
@@ -82,6 +86,8 @@ namespace CST324_MyGuitarShop.Api
 
             builder.Services.AddSingleton(new SqlConnectionFactory(connectionString));
 
+            builder.Services.AddScoped<IRepository<ProductDto>, ProductRepo>();
+            
             // Add services to the container.
             builder.Services.AddControllers();
         }
