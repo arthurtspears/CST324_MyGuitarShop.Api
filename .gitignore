@@ -362,3 +362,4 @@ MigrationBackup/
 # Fody - auto-generated XML schema
 FodyWeavers.xsd
 /CST324_MyGuitarShop.Api/appsettings.json
+/CST324_MyGuitarShop.Api/appsettings.json.bak
