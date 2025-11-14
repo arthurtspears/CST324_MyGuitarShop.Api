@@ -19,6 +19,8 @@ public partial class Customer
 
     public int? BillingAddressId { get; set; }
 
+    public bool IsActive { get; set; } = true;
+
     public virtual ICollection<Address> Addresses { get; set; } = new List<Address>();
 
     public virtual ICollection<Order> Orders { get; set; } = new List<Order>();

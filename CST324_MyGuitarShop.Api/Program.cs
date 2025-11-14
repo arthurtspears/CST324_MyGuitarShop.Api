@@ -6,6 +6,9 @@ using MyGuitarShop.Common.Interfaces;
 using MyGuitarShop.Data.Ado.Entities;
 using MyGuitarShop.Data.Ado.Factories;
 using MyGuitarShop.Data.Ado.Repository;
+using MyGuitarShop.Data.EFCore.Data;
+using Microsoft.EntityFrameworkCore;
+using MyGuitarShop.Data.EFCore.Repositories;
 
 namespace CST324_MyGuitarShop.Api
 {
@@ -87,6 +90,17 @@ namespace CST324_MyGuitarShop.Api
             builder.Services.AddSingleton(new SqlConnectionFactory(connectionString));
 
             builder.Services.AddScoped<IRepository<ProductDto>, ProductRepo>();
+
+            builder.Services.AddDbContextFactory<MyGuitarShopContext>(options =>
+                options.UseSqlServer(connectionString));
+
+            builder.Services.AddScoped<ProductRepository>();
+            builder.Services.AddScoped<CategoryRepository>();
+            builder.Services.AddScoped<AddressRepository>();
+            builder.Services.AddScoped<CustomerRepository>();
+            builder.Services.AddScoped<OrderRepository>();
+            builder.Services.AddScoped<OrderItemRepository>();
+            builder.Services.AddScoped<AdministratorRepository>();
             
             // Add services to the container.
             builder.Services.AddControllers();
