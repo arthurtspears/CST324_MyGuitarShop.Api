@@ -9,7 +9,7 @@ namespace CST324_MyGuitarShop.Api.Controllers.AdoControllers
     [ApiController]
     public class ProductsController(
         ILogger<ProductsController> logger,
-        IRepository<ProductDto> repo) 
+        IRepository<ProductEntity> repo) 
         : ControllerBase
     {
         [HttpGet]
@@ -53,7 +53,17 @@ namespace CST324_MyGuitarShop.Api.Controllers.AdoControllers
         {
             try
             {
-                var numberProductsCreated = await repo.InsertAsync(newProduct);
+                var entity = new ProductEntity
+                {
+                    ProductID = 0,
+                    ProductCode = newProduct.ProductCode,
+                    ProductName = newProduct.ProductName,
+                    Description = newProduct.Description,
+                    ListPrice = newProduct.ListPrice,
+                    DiscountPercent = newProduct.DiscountPercent
+                };
+
+                var numberProductsCreated = await repo.InsertAsync(entity);
 
                 return Ok($"{numberProductsCreated} new products created");
             }
@@ -73,7 +83,17 @@ namespace CST324_MyGuitarShop.Api.Controllers.AdoControllers
                 if (await repo.FindByIdAsync(id) == null)
                     return NotFound($"Product with id {id} not found");
 
-                var numberProductsUpdated = await repo.UpdateAsync(id, updatedProduct);
+                var entity = new ProductEntity
+                {
+                    ProductID = 0,
+                    ProductCode = updatedProduct.ProductCode,
+                    ProductName = updatedProduct.ProductName,
+                    Description = updatedProduct.Description,
+                    ListPrice = updatedProduct.ListPrice,
+                    DiscountPercent = updatedProduct.DiscountPercent
+                };
+
+                var numberProductsUpdated = await repo.UpdateAsync(id, entity);
 
                 return Ok($"{numberProductsUpdated} products updated");
             }

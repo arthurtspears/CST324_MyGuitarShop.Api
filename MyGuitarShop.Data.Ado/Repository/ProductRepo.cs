@@ -1,7 +1,7 @@
 ﻿using Microsoft.Data.SqlClient;
 using Microsoft.Extensions.Logging;
-using MyGuitarShop.Common.DTOs;
 using MyGuitarShop.Common.Interfaces;
+using MyGuitarShop.Data.Ado.Entities;
 using MyGuitarShop.Data.Ado.Factories;
 
 namespace MyGuitarShop.Data.Ado.Repository
@@ -9,11 +9,11 @@ namespace MyGuitarShop.Data.Ado.Repository
     public class ProductRepo(
         ILogger<ProductRepo> logger, 
         SqlConnectionFactory sqlConnectionFactory) 
-        : IRepository<ProductDto>
+        : IRepository<ProductEntity>
     {
-        public async Task<IEnumerable<ProductDto>> GetAllAsync()
+        public async Task<IEnumerable<ProductEntity>> GetAllAsync()
         {
-            var products = new List<ProductDto>();
+            var products = new List<ProductEntity>();
 
             try
             {
@@ -25,7 +25,7 @@ namespace MyGuitarShop.Data.Ado.Repository
 
                 while(await reader.ReadAsync())
                 {
-                    var product = new ProductDto
+                    var product = new ProductEntity
                     {
                         ProductID = reader.GetInt32(reader.GetOrdinal("ProductID")),
                         CategoryID = reader.IsDBNull(reader.GetOrdinal("CategoryID")) ? null : reader.GetInt32(reader.GetOrdinal("CategoryID")),
@@ -46,9 +46,9 @@ namespace MyGuitarShop.Data.Ado.Repository
             return products;
         }
 
-        public async Task<ProductDto?> FindByIdAsync(int id)
+        public async Task<ProductEntity?> FindByIdAsync(int id)
         {
-            ProductDto? product = null;
+            ProductEntity? product = null;
 
             try
             {
@@ -62,7 +62,7 @@ namespace MyGuitarShop.Data.Ado.Repository
 
                 if (await reader.ReadAsync())
                 {
-                    product = new ProductDto()
+                    product = new ProductEntity()
                     {
                         ProductID = reader.GetInt32(reader.GetOrdinal("ProductID")),
                         CategoryID = reader.IsDBNull(reader.GetOrdinal("CategoryID")) ? null : reader.GetInt32(reader.GetOrdinal("CategoryID")),
@@ -82,7 +82,7 @@ namespace MyGuitarShop.Data.Ado.Repository
             return product;
         }
 
-        public async Task<int> InsertAsync(ProductDto dto)
+        public async Task<int> InsertAsync(ProductEntity entity)
         {
             const string query = @"
                 INSERT INTO Products (CategoryID, ProductCode, ProductName, Description, ListPrice, DiscountPercent, DateAdded)
@@ -94,12 +94,12 @@ namespace MyGuitarShop.Data.Ado.Repository
 
                 await using var command = new SqlCommand(query, connection);
 
-                command.Parameters.AddWithValue("@CategoryID", dto.CategoryID);
-                command.Parameters.AddWithValue("@ProductCode", dto.ProductCode);
-                command.Parameters.AddWithValue("@ProductName", dto.ProductName);
-                command.Parameters.AddWithValue("@Description", dto.Description);
-                command.Parameters.AddWithValue("@ListPrice", dto.ListPrice);
-                command.Parameters.AddWithValue("@DiscountPercent", dto.DiscountPercent);
+                command.Parameters.AddWithValue("@CategoryID", entity.CategoryID);
+                command.Parameters.AddWithValue("@ProductCode", entity.ProductCode);
+                command.Parameters.AddWithValue("@ProductName", entity.ProductName);
+                command.Parameters.AddWithValue("@Description", entity.Description);
+                command.Parameters.AddWithValue("@ListPrice", entity.ListPrice);
+                command.Parameters.AddWithValue("@DiscountPercent", entity.DiscountPercent);
                 command.Parameters.AddWithValue("@DateAdded", DateTime.UtcNow);
 
                 return await command.ExecuteNonQueryAsync();
@@ -111,7 +111,7 @@ namespace MyGuitarShop.Data.Ado.Repository
             }
         }
 
-        public async Task<int> UpdateAsync(int id, ProductDto dto)
+        public async Task<int> UpdateAsync(int id, ProductEntity entity)
         {
             const string query = @"UPDATE Products
                                     SET CategoryID = @CategoryID, ProductCode = @ProductCode, ProductName = @ProductName, Description = @Description, ListPrice = @ListPrice, DiscountPercent = @DiscountPercent
@@ -123,19 +123,19 @@ namespace MyGuitarShop.Data.Ado.Repository
 
                 await using var command = new SqlCommand(query, connection);
 
-                command.Parameters.AddWithValue("@CategoryID", dto.CategoryID);
+                command.Parameters.AddWithValue("@CategoryID", entity.CategoryID);
 
-                command.Parameters.AddWithValue("@ProductCode", dto.ProductCode);
+                command.Parameters.AddWithValue("@ProductCode", entity.ProductCode);
 
                 command.Parameters.AddWithValue("@ProductID", id);
 
-                command.Parameters.AddWithValue("@ProductName", dto.ProductName);
+                command.Parameters.AddWithValue("@ProductName", entity.ProductName);
 
-                command.Parameters.AddWithValue("@Description", dto.Description);
+                command.Parameters.AddWithValue("@Description", entity.Description);
 
-                command.Parameters.AddWithValue("@ListPrice", dto.ListPrice);
+                command.Parameters.AddWithValue("@ListPrice", entity.ListPrice);
 
-                command.Parameters.AddWithValue("@DiscountPercent", dto.DiscountPercent);
+                command.Parameters.AddWithValue("@DiscountPercent", entity.DiscountPercent);
 
                 return await command.ExecuteNonQueryAsync();
             }
