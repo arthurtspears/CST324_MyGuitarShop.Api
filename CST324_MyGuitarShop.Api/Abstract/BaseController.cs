@@ -1,6 +1,6 @@
-﻿using CST324_MyGuitarShop.Api.Mappers;
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
 using MyGuitarShop.Common.Interfaces;
+using MyGuitarShop.Common.Mappers;
 
 namespace CST324_MyGuitarShop.Api.Abstract
 {
@@ -53,12 +53,8 @@ namespace CST324_MyGuitarShop.Api.Abstract
         {
             try
             {
-                var entity = AutoReflectionMapper.Map<TDto, TEntity>(dto);
-
-                if (entity == null)
-                {
-                    throw new Exception("Mapping resulted in null entity");
-                }
+                var entity = AutoReflectionMapper.Map<TDto, TEntity>(dto) 
+                    ?? throw new NullReferenceException("Unable to convert dto to entity.");
 
                 var entitiesCreated = await repo.InsertAsync(entity);
 
@@ -81,7 +77,7 @@ namespace CST324_MyGuitarShop.Api.Abstract
                     return NotFound($"Entity with id {id} not found");
 
                 var entity = AutoReflectionMapper.Map<TDto, TEntity>(dto)
-                    ?? throw new Exception("Mapping resulted in null entity");
+                    ?? throw new NullReferenceException("Unable to convert dto to entity.");
 
                 var entitiesUpdated = await repo.UpdateAsync(id, entity);
 

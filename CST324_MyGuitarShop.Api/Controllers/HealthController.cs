@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using MongoDB.Driver;
 using MyGuitarShop.Data.Ado.Factories;
 using MyGuitarShop.Data.EFCore.Data;
 
@@ -10,7 +11,8 @@ namespace CST324_MyGuitarShop.Api.Controllers
     public class HealthController(
         ILogger<HealthController> logger,
         SqlConnectionFactory sqlConnectionFactory,
-        MyGuitarShopContext dbContext) 
+        MyGuitarShopContext dbContext,
+        IMongoClient mongoClient) 
         : ControllerBase
     {
         [HttpGet]
@@ -58,6 +60,28 @@ namespace CST324_MyGuitarShop.Api.Controllers
             {
                 logger.LogCritical("EFCore DbContext health check failed");
                 return StatusCode(503, "Database Unhealthy via EFCore DbContext");
+            }
+        }
+
+        [HttpGet("db/mongo")]
+        public async Task<IActionResult> GetMongoDbHealthAsync()
+        {
+            try
+            {
+                var response = await mongoClient.ListDatabaseNamesAsync();
+
+                var databaseNames = await response.ToListAsync() ?? [];
+
+                if (databaseNames.Count == 0)
+                    throw new Exception("Cannot connect to Mongo database.");
+
+                return Ok(new { Message = "Mongo Connection Successful!", databaseNames });
+            }
+            catch (Exception)
+            {
+                logger.LogCritical("MongoDb health check failed");
+
+                return StatusCode(503, "Mongo Database connection unsuccessful.");
             }
         }
     }

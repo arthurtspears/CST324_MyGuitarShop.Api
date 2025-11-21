@@ -8,6 +8,7 @@ using MyGuitarShop.Data.Ado.Factories;
 using MyGuitarShop.Data.Ado.Repository;
 using MyGuitarShop.Data.EFCore.Data;
 using Microsoft.EntityFrameworkCore;
+using MongoDB.Driver;
 using MyGuitarShop.Data.EFCore.Repositories;
 
 namespace CST324_MyGuitarShop.Api
@@ -23,6 +24,12 @@ namespace CST324_MyGuitarShop.Api
                 AddLogging(builder);
 
                 AddServices(builder);
+
+                builder.Host.UseDefaultServiceProvider(options =>
+                {
+                    options.ValidateScopes = true;
+                    options.ValidateOnBuild = true;
+                });
 
                 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
                 if (builder.Environment.IsDevelopment())
@@ -87,10 +94,13 @@ namespace CST324_MyGuitarShop.Api
             var connectionString = builder.Configuration.GetConnectionString("MyGuitarShop")
                 ?? throw new InvalidOperationException("MyGuitarShop connection string not found.");
 
+            //Ado.net stuff
             builder.Services.AddSingleton(new SqlConnectionFactory(connectionString));
 
-            builder.Services.AddScoped<IRepository<ProductDto>, ProductRepo>();
+            builder.Services.AddScoped<IRepository<ProductEntity>, ProductRepo>();
+            builder.Services.AddScoped<OrderRepo>();
 
+            //EF Core stuff
             builder.Services.AddDbContextFactory<MyGuitarShopContext>(options =>
                 options.UseSqlServer(connectionString));
 
@@ -101,9 +111,21 @@ namespace CST324_MyGuitarShop.Api
             builder.Services.AddScoped<OrderRepository>();
             builder.Services.AddScoped<OrderItemRepository>();
             builder.Services.AddScoped<AdministratorRepository>();
-            
+
+            //MongoDb stuff 
+            var mongoConnectionString = builder.Configuration.GetConnectionString("MongoDb")
+                ?? throw new InvalidOperationException("MongoDb connection string not found.");
+
+            builder.Services.AddSingleton<IMongoClient, MongoClient>(_ => new MongoClient(mongoConnectionString));
+
+            builder.Services.AddSingleton<IMongoDatabase>(sp =>
+            {
+                var mongoClient = sp.GetRequiredService<IMongoClient>();
+                return mongoClient.GetDatabase("MyGuitarShopCluster");
+            });
+
             // Add services to the container.
-            builder.Services.AddControllers();
+            builder.Services.AddControllers().AddControllersAsServices();
         }
     }
 }
