@@ -1,4 +1,7 @@
-﻿using MongoDB.Bson;
+﻿
+
+
+using MongoDB.Bson;
 using MongoDB.Bson.Serialization.Attributes;
 
 namespace MyGuitarShop.Data.MongoDb.Abstract
@@ -7,6 +10,6 @@ namespace MyGuitarShop.Data.MongoDb.Abstract
     {
         [BsonId]
         [BsonRepresentation(BsonType.ObjectId)]
-        public string _id { get; init; }
+        public string _id { get; init; } = null!;
     }
 }

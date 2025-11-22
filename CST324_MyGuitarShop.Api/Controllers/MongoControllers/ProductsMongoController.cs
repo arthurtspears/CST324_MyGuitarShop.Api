@@ -1,4 +1,7 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿
+
+
+using Microsoft.AspNetCore.Mvc;
 using MyGuitarShop.Common.DTOs;
 using MyGuitarShop.Data.MongoDb.Models;
 using MyGuitarShop.Data.MongoDb.Services;
@@ -54,7 +57,7 @@ namespace CST324_MyGuitarShop.Api.Controllers.MongoControllers
         {
             try
             {
-                var entity = new ProductModel()
+                var model = new ProductModel()
                 {
                     ProductCode = newProduct.ProductCode,
                     ProductName = newProduct.ProductName,
@@ -63,7 +66,7 @@ namespace CST324_MyGuitarShop.Api.Controllers.MongoControllers
                     DiscountPercent = newProduct.DiscountPercent
                 };
 
-                if(await productService.InsertAsync(entity))
+                if(await productService.InsertAsync(model))
                     return Ok($"Product inserted");
                 throw new Exception($"Unable to insert new product");
             }
