@@ -1,15 +1,15 @@
 
-using System.Diagnostics;
 using Microsoft.AspNetCore.HttpLogging;
-using MyGuitarShop.Common.DTOs;
+using Microsoft.EntityFrameworkCore;
+using MongoDB.Driver;
 using MyGuitarShop.Common.Interfaces;
 using MyGuitarShop.Data.Ado.Entities;
 using MyGuitarShop.Data.Ado.Factories;
 using MyGuitarShop.Data.Ado.Repository;
 using MyGuitarShop.Data.EFCore.Data;
-using Microsoft.EntityFrameworkCore;
-using MongoDB.Driver;
 using MyGuitarShop.Data.EFCore.Repositories;
+using System.Diagnostics;
+using MyGuitarShop.Data.MongoDb.Services;
 
 namespace CST324_MyGuitarShop.Api
 {
@@ -97,7 +97,7 @@ namespace CST324_MyGuitarShop.Api
             //Ado.net stuff
             builder.Services.AddSingleton(new SqlConnectionFactory(connectionString));
 
-            builder.Services.AddScoped<IRepository<ProductEntity>, ProductRepo>();
+            builder.Services.AddScoped<IRepository<ProductEntity, int>, ProductRepo>();
             builder.Services.AddScoped<OrderRepo>();
 
             //EF Core stuff
@@ -123,6 +123,9 @@ namespace CST324_MyGuitarShop.Api
                 var mongoClient = sp.GetRequiredService<IMongoClient>();
                 return mongoClient.GetDatabase("MyGuitarShopCluster");
             });
+
+            builder.Services.AddScoped<MongoProductService>();
+
 
             // Add services to the container.
             builder.Services.AddControllers().AddControllersAsServices();

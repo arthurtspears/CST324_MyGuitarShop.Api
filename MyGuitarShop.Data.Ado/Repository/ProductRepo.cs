@@ -9,7 +9,7 @@ namespace MyGuitarShop.Data.Ado.Repository
     public class ProductRepo(
         ILogger<ProductRepo> logger, 
         SqlConnectionFactory sqlConnectionFactory) 
-        : IRepository<ProductEntity>
+        : IRepository<ProductEntity, int>
     {
         public async Task<IEnumerable<ProductEntity>> GetAllAsync()
         {
@@ -82,7 +82,7 @@ namespace MyGuitarShop.Data.Ado.Repository
             return product;
         }
 
-        public async Task<int> InsertAsync(ProductEntity entity)
+        public async Task<bool> InsertAsync(ProductEntity entity)
         {
             const string query = @"
                 INSERT INTO Products (CategoryID, ProductCode, ProductName, Description, ListPrice, DiscountPercent, DateAdded)
@@ -102,16 +102,16 @@ namespace MyGuitarShop.Data.Ado.Repository
                 command.Parameters.AddWithValue("@DiscountPercent", entity.DiscountPercent);
                 command.Parameters.AddWithValue("@DateAdded", DateTime.UtcNow);
 
-                return await command.ExecuteNonQueryAsync();
+                return await command.ExecuteNonQueryAsync() != 0;
             }
             catch (Exception ex)
             {
                 logger.LogError(ex.Message, "Error inserting new product");
-                return 0;
+                return false;
             }
         }
 
-        public async Task<int> UpdateAsync(int id, ProductEntity entity)
+        public async Task<bool> UpdateAsync(int id, ProductEntity entity)
         {
             const string query = @"UPDATE Products
                                     SET CategoryID = @CategoryID, ProductCode = @ProductCode, ProductName = @ProductName, Description = @Description, ListPrice = @ListPrice, DiscountPercent = @DiscountPercent
@@ -137,17 +137,17 @@ namespace MyGuitarShop.Data.Ado.Repository
 
                 command.Parameters.AddWithValue("@DiscountPercent", entity.DiscountPercent);
 
-                return await command.ExecuteNonQueryAsync();
+                return await command.ExecuteNonQueryAsync() != 0;
             }
             catch (Exception ex)
             {
                 logger.LogError(ex.Message, "Error Updating Product");
 
-                throw;
+                return false;
             }
         }
 
-        public async Task<int> DeleteAsync(int id)
+        public async Task<bool> DeleteAsync(int id)
         {
             const string query = @"DELETE FROM Products WHERE ProductID = @ProductID";
 
@@ -159,13 +159,13 @@ namespace MyGuitarShop.Data.Ado.Repository
 
                 command.Parameters.AddWithValue("@ProductID", id);
 
-                return await command.ExecuteNonQueryAsync();
+                return await command.ExecuteNonQueryAsync() != 0;
             }
             catch (Exception ex)
             {
                 logger.LogError(ex.Message, "Error Deleting Product");
 
-                return 0;
+                return false;
             }
         }
     }

@@ -7,8 +7,8 @@ namespace CST324_MyGuitarShop.Api.Abstract
     [ApiController]
     [Route("api/[controller]")]
     public abstract class BaseController<TDto, TEntity>(
-        IRepository<TEntity> repo,
-        ILogger<BaseController<TDto, TEntity>> logger
+        ILogger<BaseController<TDto, TEntity>> logger,
+        IRepository<TEntity, int> repo
         ) : ControllerBase
         where TEntity : class, new()
     {

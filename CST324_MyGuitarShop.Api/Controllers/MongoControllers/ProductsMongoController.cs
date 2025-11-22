@@ -1,15 +1,15 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using MyGuitarShop.Common.DTOs;
-using MyGuitarShop.Common.Interfaces;
-using MyGuitarShop.Data.Ado.Entities;
+using MyGuitarShop.Data.MongoDb.Models;
+using MyGuitarShop.Data.MongoDb.Services;
 
-namespace CST324_MyGuitarShop.Api.Controllers.AdoControllers
+namespace CST324_MyGuitarShop.Api.Controllers.MongoControllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    public class ProductsController(
-        ILogger<ProductsController> logger,
-        IRepository<ProductEntity, int> repo) 
+    public class ProductsMongoController(
+        ILogger<ProductsMongoController> logger,
+        MongoProductService productService) 
         : ControllerBase
     {
         [HttpGet]
@@ -17,9 +17,10 @@ namespace CST324_MyGuitarShop.Api.Controllers.AdoControllers
         {
             try
             {
-                var products = await repo.GetAllAsync();
-
-                return Ok(products);
+                var products = await productService.GetAllAsync();
+                if(products.Count() != 0 )
+                    return Ok(products);
+                return NotFound("No items found");
             }
             catch (Exception ex)
             {
@@ -30,11 +31,11 @@ namespace CST324_MyGuitarShop.Api.Controllers.AdoControllers
         }
 
         [HttpGet("{id}")]
-        public async Task<IActionResult> GetByIdAsync(int id)
+        public async Task<IActionResult> GetByIdAsync(string id)
         {
             try
             {
-                var product = await repo.FindByIdAsync(id);
+                var product = await productService.FindByIdAsync(id);
                 if (product == null)
                 {
                     return NotFound();
@@ -53,9 +54,8 @@ namespace CST324_MyGuitarShop.Api.Controllers.AdoControllers
         {
             try
             {
-                var entity = new ProductEntity
+                var entity = new ProductModel()
                 {
-                    ProductID = 0,
                     ProductCode = newProduct.ProductCode,
                     ProductName = newProduct.ProductName,
                     Description = newProduct.Description,
@@ -63,29 +63,29 @@ namespace CST324_MyGuitarShop.Api.Controllers.AdoControllers
                     DiscountPercent = newProduct.DiscountPercent
                 };
 
-                var numberProductsCreated = await repo.InsertAsync(entity);
-
-                return Ok($"{numberProductsCreated} new products created");
+                if(await productService.InsertAsync(entity))
+                    return Ok($"Product inserted");
+                throw new Exception($"Unable to insert new product");
             }
             catch (Exception ex)
             {
-                logger.LogError(ex.Message, "Error adding new product");
+                logger.LogError("Error adding new product.\n\nError {message}",ex.Message);
 
                 return StatusCode(StatusCodes.Status500InternalServerError, "Internal server error");
             }
         }
 
         [HttpPut("{id}")]
-        public async Task<IActionResult> UpdateProductAsync(int id, ProductDto updatedProduct)
+        public async Task<IActionResult> UpdateProductAsync(string id, ProductDto updatedProduct)
         {
             try
             {
-                if (await repo.FindByIdAsync(id) == null)
-                    return NotFound($"Product with id {id} not found");
+                if (await productService.FindByIdAsync(id) == null)
+                    return NotFound($"ProductID {id} not found");
 
-                var entity = new ProductEntity
+                var entity = new ProductModel()
                 {
-                    ProductID = 0,
+                    _id = id,
                     ProductCode = updatedProduct.ProductCode,
                     ProductName = updatedProduct.ProductName,
                     Description = updatedProduct.Description,
@@ -93,7 +93,7 @@ namespace CST324_MyGuitarShop.Api.Controllers.AdoControllers
                     DiscountPercent = updatedProduct.DiscountPercent
                 };
 
-                var numberProductsUpdated = await repo.UpdateAsync(id, entity);
+                var numberProductsUpdated = await productService.UpdateAsync(id, entity);
 
                 return Ok($"{numberProductsUpdated} products updated");
             }
@@ -106,20 +106,21 @@ namespace CST324_MyGuitarShop.Api.Controllers.AdoControllers
         }
 
         [HttpDelete("{id}")]
-        public async Task<IActionResult> DeleteProductAsync(int id)
+        public async Task<IActionResult> DeleteProductAsync(string id)
         {
             try
             {
-                if (await repo.FindByIdAsync(id) == null)
-                    return NotFound($"Product with id {id} not found");
+                if (await productService.FindByIdAsync(id) == null)
+                    return NotFound($"ProductID {id} not found");
 
-                var numberProductsDeleted = await repo.DeleteAsync(id);
+                if(await productService.DeleteAsync(id))
+                    return Ok($"ProductID {id} deleted");
 
-                return Ok($"{numberProductsDeleted} products deleted");
+                throw new Exception($"Unable to delete ProductID {id}");
             }
             catch (Exception ex)
             {
-                logger.LogError(ex.Message, "Error deleting product with ID {ProductID}", id);
+                logger.LogError("Error deleting ProductID {ProductID}\n\nError {message}", id, ex.Message);
 
                 return StatusCode(StatusCodes.Status500InternalServerError, "Internal server error");
             }

@@ -9,7 +9,7 @@ namespace CST324_MyGuitarShop.Api.Controllers.AdoControllers
     [ApiController]
     public class OrdersController(
         ILogger<OrdersController> logger,
-        OrderRepo repo) 
+        OrderRepo repo)
         : ControllerBase
     {
         [HttpGet]
