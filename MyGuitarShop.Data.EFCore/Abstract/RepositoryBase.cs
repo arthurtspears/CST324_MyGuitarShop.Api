@@ -1,27 +1,26 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using MyGuitarShop.Common.Interfaces;
-using MyGuitarShop.Common.Mappers;
 using MyGuitarShop.Data.EFCore.Data;
 
 namespace MyGuitarShop.Data.EFCore.Abstract
 {
     public abstract class RepositoryBase<TEntity>(
         MyGuitarShopContext dbContext
-        ) : IRepository<TEntity>
+        ) : IRepository<TEntity, int>
         where TEntity : class
     {
         private readonly DbSet<TEntity> _dbSet = dbContext.Set<TEntity>();
 
-        public async Task<int> DeleteAsync(int id)
+        public async Task<bool> DeleteAsync(int id)
         {
             var entity = await _dbSet.FindAsync(id);
 
             if (entity == null)
-                return 0;
+                return false;
 
             _dbSet.Remove(entity);
 
-            return await dbContext.SaveChangesAsync();
+            return await dbContext.SaveChangesAsync() != 0;
         }
 
         public async Task<TEntity?> FindByIdAsync(int id) =>             
@@ -30,23 +29,23 @@ namespace MyGuitarShop.Data.EFCore.Abstract
         public async Task<IEnumerable<TEntity>> GetAllAsync() =>
             await _dbSet.ToListAsync();
 
-        public async Task<int> InsertAsync(TEntity entity)
+        public async Task<bool> InsertAsync(TEntity entity)
         {
             await _dbSet.AddAsync(entity);
 
-            return await dbContext.SaveChangesAsync();
+            return await dbContext.SaveChangesAsync() != 0;
         }
 
-        public async Task<int> UpdateAsync(int id, TEntity entity)
+        public async Task<bool> UpdateAsync(int id, TEntity entity)
         {
             var existingEntity = await _dbSet.FindAsync(id);
 
             if (existingEntity == null)
-                return 0;
+                return false;
 
             _dbSet.Entry(existingEntity).CurrentValues.SetValues(entity);
 
-            return await dbContext.SaveChangesAsync();
+            return await dbContext.SaveChangesAsync() != 0;
         }
     }
 }

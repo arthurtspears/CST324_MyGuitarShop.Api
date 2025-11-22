@@ -1,16 +1,16 @@
 ﻿
 namespace MyGuitarShop.Common.Interfaces
 {
-    public interface IRepository<TEntity>
+    public interface IRepository<TEntity, in TKey>
     {
         Task<IEnumerable<TEntity>> GetAllAsync();
 
-        Task<TEntity?> FindByIdAsync(int id);
+        Task<TEntity?> FindByIdAsync(TKey id);
 
-        Task<int> InsertAsync(TEntity entity);
+        Task<bool> InsertAsync(TEntity entity);
 
-        Task<int> UpdateAsync(int id, TEntity entity);
+        Task<bool> UpdateAsync(TKey id, TEntity entity);
 
-        Task<int> DeleteAsync(int id);
+        Task<bool> DeleteAsync(TKey id);
     }
 }

@@ -9,7 +9,7 @@ namespace MyGuitarShop.Data.Ado.Repository
     public class OrderRepo(
         ILogger<OrderRepo> logger, 
         SqlConnectionFactory sqlConnectionFactory) 
-        : IRepository<OrderEntity>
+        : IRepository<OrderEntity, int>
     {
         public async Task<IEnumerable<OrderEntity>> GetAllAsync()
         {
@@ -88,7 +88,7 @@ namespace MyGuitarShop.Data.Ado.Repository
             return entity;
         }
 
-        public async Task<int> InsertAsync(OrderEntity entity)
+        public async Task<bool> InsertAsync(OrderEntity entity)
         {
             const string query = @"
                 INSERT INTO Orders (CustomerID, OrderDate, ShipAmount, TaxAmount, ShipDate, ShipAddressID, CardType, CardNumber, CardExpires, BillingAddressID)
@@ -111,16 +111,17 @@ namespace MyGuitarShop.Data.Ado.Repository
                 command.Parameters.AddWithValue("@CardExpires", entity.CardExpires);
                 command.Parameters.AddWithValue("@BillingAddressID", entity.BillingAddressID);
 
-                return await command.ExecuteNonQueryAsync();
+                return await command.ExecuteNonQueryAsync() != 0;
             }
             catch (Exception ex)
             {
                 logger.LogError("Error Inserting new Order.\nError:\n\n{message}", ex.Message);
-                return 0;
+
+                return false;
             }
         }
 
-        public async Task<int> InsertAsync(OrderEntity entity, IEnumerable<OrderItemEntity> orderItems)
+        public async Task<bool> InsertAsync(OrderEntity entity, IEnumerable<OrderItemEntity> orderItems)
         {
             const string insertOrder = @"
                 INSERT INTO Orders (CustomerID, OrderDate, ShipAmount, TaxAmount, ShipDate, ShipAddressID, CardType, CardNumber, CardExpires, BillingAddressID)
@@ -168,18 +169,19 @@ namespace MyGuitarShop.Data.Ado.Repository
                 }
                 await transaction.CommitAsync();
 
-                return orderId;
+                return orderId != 0;
             }
             catch (Exception ex)
             {
                 await transaction.RollbackAsync();
 
                 logger.LogError("Error Inserting new Order.\nError:\n\n{message}", ex.Message);
-                return 0;
+
+                return false;
             }
         }
 
-        public async Task<int> UpdateAsync(int id, OrderEntity entity)
+        public async Task<bool> UpdateAsync(int id, OrderEntity entity)
         {
             const string query = @"UPDATE Orders
                                     SET CustomerID = @CustomerID, OrderDate = @OrderDate, ShipAmount = @ShipAmount, TaxAmount = @TaxAmount, ShipDate = @ShipDate, ShipAddressID = @ShipAddressID, CardType = @CardType, CardNumber = @CardNumber, CardExpires = @CardExpires, BillingAddressID = @BillingAddressID
@@ -204,17 +206,17 @@ namespace MyGuitarShop.Data.Ado.Repository
 
                 command.Parameters.AddWithValue("@OrderID", id);
 
-                return await command.ExecuteNonQueryAsync();
+                return await command.ExecuteNonQueryAsync() != 0;
             }
             catch (Exception ex)
             {
                 logger.LogError("Error updating OrderID {id}.\nError:\n\n{message}", id, ex.Message);
 
-                throw;
+                return false;
             }
         }
 
-        public async Task<int> DeleteAsync(int id)
+        public async Task<bool> DeleteAsync(int id)
         {
             const string query = @"DELETE FROM Orders WHERE OrderID = @OrderID";
 
@@ -226,13 +228,13 @@ namespace MyGuitarShop.Data.Ado.Repository
 
                 command.Parameters.AddWithValue("@OrderID", id);
 
-                return await command.ExecuteNonQueryAsync();
+                return await command.ExecuteNonQueryAsync() != 0;
             }
             catch (Exception ex)
             {
                 logger.LogError("Error Deleting OrderID {id}.\nError:\n\n{message}", id, ex.Message);
 
-                return 0;
+                return false;
             }
         }
     }
