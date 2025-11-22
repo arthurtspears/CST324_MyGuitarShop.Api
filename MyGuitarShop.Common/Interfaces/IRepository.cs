@@ -1,4 +1,6 @@
 ﻿
+
+
 namespace MyGuitarShop.Common.Interfaces
 {
     public interface IRepository<TEntity, in TKey>

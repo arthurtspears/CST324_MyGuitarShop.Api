@@ -1,4 +1,6 @@
-﻿using MongoDB.Driver;
+﻿
+
+using MongoDB.Driver;
 using MyGuitarShop.Common.Interfaces;
 
 namespace MyGuitarShop.Data.MongoDb.Abstract
